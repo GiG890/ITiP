@@ -1,0 +1,12 @@
+Exception: CustomFileNotFoundException
+Message: File 'test.txt' not found
+---
+Exception: CustomFileNotFoundException
+Message: File 'missing_file.txt' not found
+---
+Exception: IOException
+Message: Stream closed
+---
+Exception: ArrayIndexOutOfBoundsException
+Message: Index 10 out of bounds for length 5
+---
