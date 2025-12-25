@@ -1,155 +1,103 @@
-import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.Map;
-
-class HashTable<K, V> {
-    private static class Entry<K, V> {
-        K key;
-        V value;
-
-        
-        public Entry(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public K getKey() { return key; }
-        public V getValue() { return value; }
-        public void setValue(V value) { this.value = value; }
-    }
-
-    private LinkedList<Entry<K, V>>[] table;
-    private int size;
-    private static final int DEFAULT_SIZE = 10;
-
-    @SuppressWarnings("unchecked")
-    public HashTable() {
-        table = new LinkedList[DEFAULT_SIZE];
-        size = 0;
-    }
-
-    private int hash(K key) {
-        return Math.abs(key.hashCode()) % table.length;
-    }
-
-    public void put(K key, V value) {
-        int index = hash(key);
-        if (table[index] == null) {
-            table[index] = new LinkedList<Entry<K, V>>();
-        }
-        for (Entry<K, V> entry : table[index]) {
-            if (entry.getKey().equals(key)) {
-                entry.setValue(value);
-                return;
-            }
-        }
-        table[index].add(new Entry<K, V>(key, value));
-        size++;
-    }
-    
-    public V get(K key) {
-        int index = hash(key);
-        if (table[index] == null) return null;
-        for (Entry<K, V> entry : table[index]) {
-            if (entry.getKey().equals(key)) return entry.getValue();
-        }
-        return null;
-    }
-    
-    public V remove(K key) {
-        int index = hash(key);
-        if (table[index] == null) return null;
-        for (Entry<K, V> entry : table[index]) {
-            if (entry.getKey().equals(key)) {
-                V value = entry.getValue();
-                table[index].remove(entry);
-                size--;
-                if (table[index].isEmpty()) table[index] = null;
-                return value;
-            }
-        }
-        return null;
-    }
-    
-    public int size() { return size; }
-    public boolean isEmpty() { return size == 0; }
-}
-
-//2задание
+import java.util.*;
 
 class Product {
     private String name;
-    private double price;
-    private int quantity;
-    
-    public Product(String name, double price, int quantity) {
+    private int price;
+
+    public Product(String name, int price) {
         this.name = name;
         this.price = price;
-        this.quantity = quantity;
     }
-    
-    public String getName() { return name; }
-    public double getPrice() { return price; }
-    public int getQuantity() { return quantity; }
-    
-    public void setQuantity(int quantity) {
-        if (quantity >= 0) {
-            this.quantity = quantity;
-        }
+    public String getName() {
+        return name;
+    }
+    public double getPrice() {
+        return price;
+    }
+
+    @Override
+    public String toString() {
+        return "продукт: " + name + " цена: " + price;
+    }
+    @Override 
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Product product = (Product) obj;
+        return name.equals(product.name);
+    }
+    @Override
+    public int hashCode(){
+        return name.hashCode();
     }
 }
 
-class Warehouse {
-    private Map<String, Product> products;
-    
-    public Warehouse() { products = new HashMap<>(); }
-    
-    public void addProduct(String barcode, String name, double price, int quantity) {
-        products.put(barcode, new Product(name, price, quantity));
-        System.out.println("Product added: " + name);
+class SalesCount {
+    private List<Product> sales = new ArrayList<>();
+    public void addSale(Product product) {
+        sales.add(product);
     }
-    
-    public Product findProduct(String barcode) {
-        Product product = products.get(barcode);
-        if (product != null) {
-            System.out.println("Found: " + product.getName());
-        } else {
-            System.out.println("Product not found");
+    public void showAllSales() {
+        if (sales.isEmpty()) {
+            System.out.println("Продаж пока нет.");
         }
-        return product;
+        System.out.println("Проданные товары:");
+        for (Product p: sales) {
+            System.out.println(p);
+        }
     }
-    
-    public boolean removeProduct(String barcode) {
-        Product removed = products.remove(barcode);
-        if (removed != null) {
-            System.out.println("Deleted: " + removed.getName());
-            return true;
+    public int getTotalRavenue() {
+        int total = 0;
+        for (Product p: sales) {
+            total += p.getPrice();
         }
-        return false;
+        return total;
+    }
+    public Product getMostPopulaProduct() {
+        Map<Product, Integer> counts = new HashMap<>();
+        for (Product p: sales) {
+            counts.put(p, counts.getOrDefault(p, 0) + 1);
+        }
+
+        Product mostPopular = null;
+        int maxCount = 0;
+        for (Map.Entry<Product, Integer> entry : counts.entrySet()) {
+            if (entry.getValue() > maxCount) {
+                maxCount = entry.getValue();
+                mostPopular = entry.getKey();
+            }
+        }
+        return mostPopular;
     }
 }
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("HASH TABLE TEST");
-        HashTable<String, Integer> table = new HashTable<>();
+        SalesCount register = new SalesCount();
+        register.addSale(new Product("Лабубу", 900));
+        register.addSale(new Product("Подсвечник в виде зелья из Майнкрафта", 500));
+        register.addSale(new Product("Творог", 300));
+        register.addSale(new Product("Молочный коктейль", 200));
+        register.addSale(new Product("Мультиварка", 4500));
+        register.addSale(new Product("Холодильник", 80000));
+        register.addSale(new Product("Лабубу", 900));
+        register.addSale(new Product("Лабубу", 900));
+        register.addSale(new Product("Холодильник", 80000));
         
-        table.put("Alina", 25);
-        table.put("Bell", 30);
-        
-        System.out.println("Alina: " + table.get("Alina"));  
-        System.out.println("Anna: " + table.get("Anna"));    // Не добавляли
-        System.out.println("Size: " + table.size());
-        
-        System.out.println("\nWAREHOUSE TEST");
-        Warehouse warehouse = new Warehouse();
-        warehouse.addProduct("123456789012", "Notebook", 50000, 18);
-        warehouse.addProduct("234567890123", "Pen", 1500, 25);
-        
-        warehouse.findProduct("123456789012");      
-        warehouse.findProduct("999999999999");      // Не добавляли
-        
-        warehouse.removeProduct("123456789012");    // Удалит
-        warehouse.removeProduct("000000000000");    // не существует
+        register.showAllSales();
+
+        System.out.println("" + register.getTotalRavenue());
+
+        Product popular = register.getMostPopulaProduct();
+        if (popular != null) {
+            System.out.println("" + popular.getName());
+        }
     }
-}   
+}
+
+
+
+
+
+
+
